@@ -1,0 +1,209 @@
+<!doctype html>
+<html lang="ru">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover">
+<title>VibeChat18 — 1-на-1 video chat</title>
+<script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+<style>
+*{box-sizing:border-box}body{margin:0;background:#080a10;color:#fff;font-family:Inter,system-ui,-apple-system,sans-serif}button,input,select,textarea{font:inherit}button{cursor:pointer}.hidden{display:none!important}.wrap{min-height:100vh;display:flex;flex-direction:column}.top{height:64px;padding:0 18px;display:flex;align-items:center;justify-content:space-between;border-bottom:1px solid #20232d;background:#0d1018}.logo{font-weight:900;font-size:21px}.logo b{color:#ff3d81}.badge{font-size:12px;color:#b7bdca}.main{width:min(1100px,100%);margin:auto;padding:22px}.card{background:#11151f;border:1px solid #242936;border-radius:22px;padding:22px;box-shadow:0 20px 70px #0006}.gate{max-width:520px;margin:8vh auto}.gate h1{font-size:32px;margin:0 0 10px}.gate p{color:#aeb5c4;line-height:1.5}.warning{padding:14px;border-radius:14px;background:#25151c;border:1px solid #6e2d43;color:#ffd9e5;margin:16px 0}.check{display:flex;gap:10px;align-items:flex-start;margin:13px 0;color:#d9dde7}.check input{margin-top:4px}.field{width:100%;padding:13px 14px;border-radius:12px;border:1px solid #2a3040;background:#0b0e15;color:#fff;margin:6px 0}.primary{width:100%;padding:14px;border:0;border-radius:13px;background:linear-gradient(135deg,#ff3d81,#8b5cf6);color:#fff;font-weight:800;margin-top:10px}.secondary{padding:11px 14px;border:1px solid #303747;background:#151a25;color:#fff;border-radius:12px}.muted{color:#8f97a8}.authswitch{margin-top:14px;text-align:center;color:#aeb5c4}.link{color:#ff79a8;cursor:pointer}.chat{display:grid;grid-template-columns:1fr 280px;gap:16px}.videos{display:grid;grid-template-columns:1fr 1fr;gap:12px}.videoBox{position:relative;background:#05070b;border:1px solid #252a36;border-radius:18px;overflow:hidden;aspect-ratio:16/10}.videoBox video{width:100%;height:100%;object-fit:cover;background:#05070b}.label{position:absolute;left:10px;bottom:10px;padding:6px 9px;border-radius:9px;background:#0009;font-size:12px}.controls{display:flex;flex-wrap:wrap;gap:9px;margin-top:12px}.controls button{flex:1;min-width:110px}.side{display:flex;flex-direction:column;gap:12px}.status{padding:12px;border-radius:13px;background:#0c1018;color:#bfc5d2}.danger{border-color:#6e2d43!important;color:#ff9bbb!important}.report{margin-top:auto}.report textarea{min-height:90px;resize:vertical}.small{font-size:12px;line-height:1.45}.footer{padding:18px;text-align:center;color:#697183;font-size:12px}@media(max-width:800px){.chat{grid-template-columns:1fr}.videos{grid-template-columns:1fr}.main{padding:12px}.gate{margin:3vh auto}.side{order:2}}
+</style>
+</head>
+<body>
+<div class="wrap">
+<header class="top"><div class="logo">VibeChat<span class="logo b">18</span></div><div class="badge">18+ • private 1-на-1 video chat</div></header>
+<main class="main">
+<section id="authView" class="card gate">
+<h1>Общайся один на один</h1>
+<p>Случайное соединение с другим совершеннолетним пользователем. Видео не записывается и не хранится на сервере.</p>
+<div class="warning"><b>Только 18+.</b><br>Не показывайте персональные данные. Запрещены несовершеннолетние, угрозы, насилие, шантаж и другой незаконный контент. Используйте блокировку и жалобу.</div>
+<div id="signupFields">
+<input id="email" class="field" type="email" placeholder="Email">
+<input id="password" class="field" type="password" placeholder="Пароль (минимум 6 символов)">
+</div>
+<label class="check"><input id="age" type="checkbox"> Мне есть 18 лет, и я подтверждаю, что буду соблюдать правила сервиса.</label>
+<label class="check"><input id="terms" type="checkbox"> Я принимаю условия использования и политику конфиденциальности.</label>
+<button id="authBtn" class="primary">Создать аккаунт</button>
+<div class="authswitch"><span id="modeText">Уже есть аккаунт?</span> <span id="modeLink" class="link">Войти</span></div>
+<div id="authMsg" class="small muted" style="margin-top:10px"></div>
+</section>
+
+<section id="chatView" class="hidden">
+<div class="chat">
+<div class="card">
+<div class="videos">
+<div class="videoBox"><video id="remoteVideo" autoplay playsinline></video><div class="label">Собеседник</div></div>
+<div class="videoBox"><video id="localVideo" autoplay muted playsinline></video><div class="label">Вы</div></div>
+</div>
+<div class="controls">
+<button id="nextBtn" class="primary">🔎 Найти собеседника</button>
+<button id="micBtn" class="secondary">🎙 Микрофон</button>
+<button id="camBtn" class="secondary">📷 Камера</button>
+<button id="stopBtn" class="secondary">⏹ Остановить</button>
+<button id="logoutBtn" class="secondary">Выйти</button>
+</div>
+</div>
+<aside class="card side">
+<div id="status" class="status">Готов к поиску.</div>
+<div class="small muted">Совет: не сообщайте имя, адрес, номер телефона, пароли и другие личные данные.</div>
+<div class="report">
+<select id="reason" class="field">
+<option value="nudity">Нагота / сексуальный контент</option>
+<option value="underage">Возможный несовершеннолетний</option>
+<option value="harassment">Оскорбления / домогательства</option>
+<option value="violence">Насилие / угрозы</option>
+<option value="spam">Спам / мошенничество</option>
+<option value="other">Другое</option>
+</select>
+<textarea id="details" class="field" placeholder="Комментарий к жалобе"></textarea>
+<button id="reportBtn" class="secondary danger" style="width:100%">🚩 Пожаловаться и завершить</button>
+<button id="blockBtn" class="secondary danger" style="width:100%;margin-top:8px">🚫 Заблокировать</button>
+</div>
+</aside>
+</div>
+</section>
+</main>
+<div class="footer">VibeChat18 • 18+ • Не используйте сервис для незаконной деятельности</div>
+</div>
+<script>
+const SUPABASE_URL="https://vnncjunlpstyietqcufk.supabase.co";
+const SUPABASE_KEY="sb_publishable_shL_QzGZPCCjK5sE89S9vA_uiIJD5rt";
+const sb=supabase.createClient(SUPABASE_URL,SUPABASE_KEY);
+let user=null, sessionId=null, peerId=null, pc=null, channel=null, localStream=null, searchTimer=null, isOfferer=false;
+const $=id=>document.getElementById(id);
+function msg(t){$("authMsg").textContent=t}
+function status(t){$("status").textContent=t}
+function showChat(){ $("authView").classList.add("hidden"); $("chatView").classList.remove("hidden") }
+function showAuth(){ $("chatView").classList.add("hidden"); $("authView").classList.remove("hidden") }
+async function ensureProfile(u){
+ const {data,error}=await sb.from("profiles").select("*").eq("id",u.id).maybeSingle();
+ if(error) throw error;
+ return data;
+}
+async function saveConsent(){
+ await sb.from("profiles").update({age_confirmed:true,age_confirmed_at:new Date().toISOString(),terms_accepted_at:new Date().toISOString(),privacy_accepted_at:new Date().toISOString()}).eq("id",user.id);
+ await sb.from("consents").upsert([
+  {user_id:user.id,consent_type:"age_18",version:"1.0"},
+  {user_id:user.id,consent_type:"terms",version:"1.0"},
+  {user_id:user.id,consent_type:"privacy",version:"1.0"},
+  {user_id:user.id,consent_type:"community_rules",version:"1.0"}
+ ],{onConflict:"user_id,consent_type,version"});
+}
+async function auth(){
+ msg("");
+ if(!$("age").checked||!$("terms").checked){msg("Подтвердите 18+ и принятие правил.");return}
+ const email=$("email").value.trim(), password=$("password").value;
+ if(!email||password.length<6){msg("Введите email и пароль от 6 символов.");return}
+ $("authBtn").disabled=true;
+ try{
+  let r;
+  if($("authBtn").dataset.mode==="login") r=await sb.auth.signInWithPassword({email,password});
+  else r=await sb.auth.signUp({email,password});
+  if(r.error) throw r.error;
+  user=r.data.user;
+  if(!user) throw new Error("Не удалось создать пользователя.");
+  await saveConsent();
+  showChat(); await prepareMedia(); status("Готов к поиску.");
+ }catch(e){msg(e.message||"Ошибка авторизации")}
+ $("authBtn").disabled=false;
+}
+async function prepareMedia(){
+ if(localStream)return;
+ try{
+  localStream=await navigator.mediaDevices.getUserMedia({video:true,audio:true});
+  $("localVideo").srcObject=localStream;
+ }catch(e){status("Нужен доступ к камере и микрофону.")}
+}
+function closePeer(){
+ if(channel){sb.removeChannel(channel);channel=null}
+ if(pc){pc.ontrack=null;pc.onicecandidate=null;pc.close();pc=null}
+ $("remoteVideo").srcObject=null; sessionId=null; peerId=null; isOfferer=false;
+}
+async function leaveQueue(){
+ await sb.functions.invoke("matchmake",{body:{action:"leave"}});
+}
+async function stop(){
+ clearInterval(searchTimer); searchTimer=null;
+ await leaveQueue().catch(()=>{});
+ closePeer(); status("Остановлено. Нажмите «Найти собеседника».");
+}
+async function find(){
+ await stop();
+ await prepareMedia();
+ status("Ищем собеседника…");
+ const r=await sb.functions.invoke("matchmake",{body:{action:"match"}});
+ if(r.error){status("Ошибка поиска: "+(r.error.message||""));return}
+ const m=r.data;
+ if(m&&m.matched){await startSession(m.session_id,m.peer_id);return}
+ searchTimer=setInterval(checkQueue,1200);
+}
+async function checkQueue(){
+ const {data,error}=await sb.from("match_queue").select("session_id").eq("user_id",user.id).maybeSingle();
+ if(error)return;
+ if(data&&data.session_id){
+  clearInterval(searchTimer);searchTimer=null;
+  const {data:s}=await sb.from("chat_sessions").select("user_a,user_b").eq("id",data.session_id).maybeSingle();
+  if(s){const p=s.user_a===user.id?s.user_b:s.user_a;await startSession(data.session_id,p)}
+ }
+}
+async function startSession(sid,pid){
+ sessionId=sid;peerId=pid;
+ pc=new RTCPeerConnection({iceServers:[{urls:"stun:stun.l.google.com:19302"}]});
+ localStream.getTracks().forEach(t=>pc.addTrack(t,localStream));
+ pc.ontrack=e=>{$("remoteVideo").srcObject=e.streams[0]};
+ pc.onicecandidate=e=>{if(e.candidate) channel?.send({type:"broadcast",event:"signal",payload:{kind:"ice",candidate:e.candidate}})};
+ channel=sb.channel("session:"+sid,{config:{private:true}});
+ channel.on("broadcast",{event:"signal"},async ({payload})=>{
+  if(payload.from===user.id)return;
+  if(payload.kind==="offer"){
+   await pc.setRemoteDescription(payload.offer);
+   const ans=await pc.createAnswer(); await pc.setLocalDescription(ans);
+   await channel.send({type:"broadcast",event:"signal",payload:{from:user.id,kind:"answer",answer:ans}});
+  }else if(payload.kind==="answer"){
+   await pc.setRemoteDescription(payload.answer);
+  }else if(payload.kind==="ice"&&payload.candidate){
+   try{await pc.addIceCandidate(payload.candidate)}catch{}
+  }
+ });
+ await channel.subscribe();
+ const {data:s}=await sb.from("chat_sessions").select("user_a").eq("id",sid).maybeSingle();
+ isOfferer=s?.user_a===user.id;
+ status("Собеседник найден. Подключаем видео…");
+ if(isOfferer){
+  const offer=await pc.createOffer(); await pc.setLocalDescription(offer);
+  await channel.send({type:"broadcast",event:"signal",payload:{from:user.id,kind:"offer",offer}});
+ }
+}
+async function report(){
+ if(!peerId||!sessionId){status("Нет активного собеседника.");return}
+ const {error}=await sb.from("reports").insert({reporter_id:user.id,reported_id:peerId,session_id:sessionId,reason:$("reason").value,details:$("details").value});
+ if(error){status("Не удалось отправить жалобу.");return}
+ await stop(); status("Жалоба отправлена. Собеседник заблокирован для вас.");
+}
+async function block(){
+ if(!peerId){status("Нет активного собеседника.");return}
+ await sb.from("blocks").upsert({blocker_id:user.id,blocked_id:peerId});
+ await stop(); status("Пользователь заблокирован.");
+}
+$("authBtn").onclick=auth;
+$("modeLink").onclick=()=>{
+ const login=$("authBtn").dataset.mode==="login";
+ $("authBtn").dataset.mode=login?"signup":"login";
+ $("authBtn").textContent=login?"Создать аккаунт":"Войти";
+ $("modeText").textContent=login?"Уже есть аккаунт?":"Нет аккаунта?";
+ $("modeLink").textContent=login?"Войти":"Создать аккаунт";
+};
+$("nextBtn").onclick=find;$("stopBtn").onclick=stop;$("reportBtn").onclick=report;$("blockBtn").onclick=block;
+$("micBtn").onclick=()=>{const t=localStream?.getAudioTracks()[0];if(t){t.enabled=!t.enabled;$("micBtn").textContent=t.enabled?"🎙 Микрофон":"🔇 Микрофон выключен"}};
+$("camBtn").onclick=()=>{const t=localStream?.getVideoTracks()[0];if(t){t.enabled=!t.enabled;$("camBtn").textContent=t.enabled?"📷 Камера":"🚫 Камера выключена"}};
+$("logoutBtn").onclick=async()=>{await stop();localStream?.getTracks().forEach(t=>t.stop());localStream=null;await sb.auth.signOut();user=null;showAuth()};
+sb.auth.onAuthStateChange(async (_e,s)=>{
+ if(s?.user){
+  user=s.user;
+  try{const p=await ensureProfile(user);if(p?.age_confirmed&&p?.terms_accepted_at&&p?.privacy_accepted_at){showChat();await prepareMedia()}}catch{}
+ }
+});
+(async()=>{const r=await sb.auth.getSession();if(r.data.session){user=r.data.session.user;try{const p=await ensureProfile(user);if(p?.age_confirmed&&p?.terms_accepted_at&&p?.privacy_accepted_at){showChat();await prepareMedia()}}catch{}}})();
+</script>
+</body>
+</html>
