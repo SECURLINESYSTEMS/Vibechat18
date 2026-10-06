@@ -20,7 +20,7 @@
 <style>
 :root{--bg:#f4f7fb;--card:#fff;--text:#111827;--muted:#6b7280;--line:#e5e7eb;--blue:#2563eb;--blue2:#1d4ed8;--red:#ef4444}
 *{box-sizing:border-box}html,body{margin:0;min-height:100%;font-family:Inter,ui-sans-serif,system-ui,-apple-system,BlinkMacSystemFont,"Segoe UI",sans-serif;background:var(--bg);color:var(--text)}button,input,select,textarea{font:inherit}button{cursor:pointer}.hidden{display:none!important}
-.top{height:64px;padding:0 24px;background:#fff;border-bottom:1px solid var(--line);display:flex;align-items:center;justify-content:space-between}.logo{font-size:22px;font-weight:900;letter-spacing:-.7px}.logo b{color:var(--blue)}.topRight{display:flex;align-items:center;gap:10px}.adult{font-size:12px;font-weight:800;color:#6b7280;background:#f3f4f6;border-radius:999px;padding:7px 10px}
+.top{height:64px;padding:0 24px;background:#fff;border-bottom:1px solid var(--line);display:flex;align-items:center;justify-content:space-between;position:sticky;top:0;z-index:50}.logo{font-size:22px;font-weight:900;letter-spacing:-.7px}.logo b{color:var(--blue)}.topRight{display:flex;align-items:center;gap:10px}.adult{font-size:12px;font-weight:800;color:#6b7280;background:#f3f4f6;border-radius:999px;padding:7px 10px}.profileWrap{position:relative}.profileBtn{display:flex;align-items:center;gap:8px;border:1px solid var(--line);background:#fff;border-radius:999px;padding:4px 10px 4px 5px;color:var(--text);font-weight:700}.profileAvatar{width:32px;height:32px;border-radius:50%;display:grid;place-items:center;background:#eff6ff;color:var(--blue);font-size:12px;font-weight:900}.profileMenu{position:absolute;right:0;top:46px;width:250px;background:#fff;border:1px solid var(--line);border-radius:15px;box-shadow:0 18px 50px rgba(15,23,42,.14);padding:8px;display:none}.profileMenu.open{display:block}.profileHead{padding:10px;border-bottom:1px solid var(--line);margin-bottom:5px}.profileEmail{font-size:13px;font-weight:800;overflow:hidden;text-overflow:ellipsis}.profileRole{font-size:11px;color:var(--muted);margin-top:3px}.profileItem{display:block;width:100%;text-align:left;border:0;background:#fff;color:var(--text);padding:10px;border-radius:9px;font-size:13px}.profileItem:hover{background:#f3f4f6}.profileItem.admin{color:#2563eb;font-weight:800}.profileItem.logout{color:#dc2626}.profileCard{margin-top:10px;padding:11px;border:1px solid var(--line);border-radius:11px;background:#f8fafc;font-size:12px;line-height:1.55}.profileCard b{font-weight:800}
 .main{width:min(1180px,100%);margin:auto;padding:22px}.startPage{min-height:calc(100vh - 64px);display:grid;place-items:center;padding:24px 0 70px}.startCard{width:min(560px,100%);text-align:center;background:#fff;border:1px solid var(--line);border-radius:22px;padding:42px 34px;box-shadow:0 18px 60px rgba(15,23,42,.08)}.brandMark{width:64px;height:64px;border-radius:18px;margin:0 auto 20px;display:grid;place-items:center;background:#eff6ff;color:var(--blue);font-size:28px;font-weight:900}.startCard h1{font-size:clamp(32px,6vw,48px);line-height:1.05;letter-spacing:-1.8px;margin:0 0 12px}.startCard h1 span{color:var(--blue)}.startCard>p{color:var(--muted);line-height:1.6;margin:0 auto;max-width:440px}.startBtn{width:100%;margin-top:25px;padding:15px 18px;border:0;border-radius:12px;background:var(--blue);color:#fff;font-weight:800;font-size:16px}.startBtn:hover{background:var(--blue2)}.termsNote{font-size:12px;color:#9ca3af;line-height:1.5;margin-top:13px}.termsNote a{color:#6b7280}.ageLine{display:flex;justify-content:center;gap:7px;align-items:center;margin-top:17px;color:#6b7280;font-size:13px}.ageLine input{accent-color:var(--blue)}
 .authGate{width:min(470px,100%);margin:0 auto;background:#fff;border:1px solid var(--line);border-radius:20px;padding:28px;box-shadow:0 18px 60px rgba(15,23,42,.08)}.authGate h2{margin:0 0 7px;font-size:26px}.authGate>p{margin:0 0 18px;color:var(--muted);line-height:1.5}.field{width:100%;padding:13px 14px;border-radius:11px;border:1px solid #d1d5db;background:#fff;color:#111827;margin:6px 0;outline:none}.field:focus{border-color:#60a5fa;box-shadow:0 0 0 3px #2563eb14}.primary{padding:13px 16px;border:0;border-radius:11px;background:var(--blue);color:#fff;font-weight:800}.authGate .primary{width:100%;margin-top:10px}.check{display:flex;gap:9px;align-items:flex-start;margin:12px 0;color:#4b5563;font-size:13px;line-height:1.45}.check input{margin-top:3px;accent-color:var(--blue)}.warning{padding:12px 13px;border-radius:11px;background:#fff7ed;border:1px solid #fed7aa;color:#9a3412;font-size:12px;line-height:1.45;margin-bottom:14px}.authswitch{text-align:center;margin-top:14px;color:#6b7280;font-size:13px}.link{color:var(--blue);cursor:pointer;font-weight:700}.small{font-size:12px;line-height:1.5}.muted{color:#6b7280}
 .chat{min-height:calc(100vh - 108px);display:grid;grid-template-columns:minmax(0,1fr) 300px;gap:14px}.videoPanel{background:#111827;border-radius:18px;padding:10px}.videos{display:grid;grid-template-columns:1fr 1fr;gap:10px}.videoBox{position:relative;background:#030712;border-radius:12px;overflow:hidden;aspect-ratio:16/10}.videoBox video{width:100%;height:100%;object-fit:cover;background:#030712}.label{position:absolute;left:10px;bottom:10px;padding:6px 9px;border-radius:8px;background:#0009;color:#fff;font-size:12px}.controls{display:flex;gap:8px;margin-top:10px}.controls button{flex:1;min-width:0}.secondary{padding:11px 13px;border:1px solid #374151;background:#1f2937;color:#fff;border-radius:10px}.side{background:#fff;border:1px solid var(--line);border-radius:16px;padding:16px;display:flex;flex-direction:column;gap:10px}.status{padding:11px;border-radius:10px;background:#f8fafc;border:1px solid var(--line);color:#374151}.danger{border-color:#fecaca!important;color:#dc2626!important;background:#fff!important}.report{margin-top:auto}.report textarea{min-height:80px;resize:vertical}.footer{position:fixed;bottom:0;left:0;right:0;text-align:center;padding:9px;background:#ffffffeb;border-top:1px solid var(--line);color:#9ca3af;font-size:11px;backdrop-filter:blur(10px)}.footerLinks{display:inline-flex;gap:10px;margin-left:10px}.footer a{color:#6b7280;text-decoration:none}
@@ -30,7 +30,18 @@
 <body>
 <header class="top">
   <div class="logo">VibeChat<span class="logo b">18</span></div>
-  <div class="topRight"><span class="adult">18+ • Random video chat</span></div>
+  <div class="topRight"><span class="adult">18+ • Random video chat</span>
+    <div id="profileWrap" class="profileWrap hidden">
+      <button id="profileBtn" class="profileBtn" type="button"><span id="profileAvatar" class="profileAvatar">U</span><span>Профиль</span>⌄</button>
+      <div id="profileMenu" class="profileMenu">
+        <div class="profileHead"><div id="profileEmail" class="profileEmail">—</div><div id="profileRole" class="profileRole">Пользователь</div></div>
+        <button id="profileInfo" class="profileItem" type="button">👤 Мой профиль</button>
+        <button id="adminLink" class="profileItem admin hidden" type="button">🛡 Админ-панель</button>
+        <button id="profileLogout" class="profileItem logout" type="button">Выйти</button>
+        <div id="profileCard" class="profileCard hidden"></div>
+      </div>
+    </div>
+  </div>
 </header>
 <main class="main">
   <section id="startPage" class="startPage">
@@ -99,11 +110,30 @@
 const SUPABASE_URL="https://vnncjunlpstyietqcufk.supabase.co";
 const SUPABASE_KEY="sb_publishable_shL_QzGZPCCjK5sE89S9vA_uiIJD5rt";
 const sb=supabase.createClient(SUPABASE_URL,SUPABASE_KEY);
-let user=null, sessionId=null, peerId=null, pc=null, channel=null, localStream=null, searchTimer=null, isOfferer=false;
+let user=null, sessionId=null, peerId=null, pc=null, channel=null, localStream=null, searchTimer=null, isOfferer=false, userRole="user";
 const $=id=>document.getElementById(id);
 function msg(t){$("authMsg").textContent=t}
 function status(t){$("status").textContent=t}
 function showChat(){ $("authView").classList.add("hidden"); $("chatView").classList.remove("hidden") }
+function initials(email){return (email||"U").trim().charAt(0).toUpperCase()}
+async function updateProfileUI(){
+  const wrap=$("profileWrap"); if(!wrap)return;
+  if(!user){wrap.classList.add("hidden");return}
+  wrap.classList.remove("hidden");
+  $("profileEmail").textContent=user.email||"Пользователь";
+  $("profileAvatar").textContent=initials(user.email);
+  $("profileRole").textContent=userRole==="admin"?"Администратор":userRole==="moderator"?"Модератор":"Пользователь";
+  $("adminLink").classList.toggle("hidden",!["admin","moderator"].includes(userRole));
+}
+async function loadUserRole(){
+  userRole="user";
+  if(!user){await updateProfileUI();return}
+  try{
+    const r=await sb.functions.invoke("admin",{body:{action:"me"}});
+    if(!r.error&&r.data?.role) userRole=r.data.role;
+  }catch{}
+  await updateProfileUI();
+}
 function showAuth(){ $("chatView").classList.add("hidden"); $("authView").classList.remove("hidden") }
 async function ensureProfile(u){
  const {data,error}=await sb.from("profiles").select("*").eq("id",u.id).maybeSingle();
@@ -144,6 +174,7 @@ async function auth(){
    user=r.data.user;
    if(!user) throw new Error("Не удалось выполнить вход.");
    await saveConsent();
+   await loadUserRole();
    showChat();
    await prepareMedia();
    status("Готов к поиску.");
@@ -158,6 +189,7 @@ async function auth(){
    if(r.data.session){
     user=r.data.user;
     await saveConsent();
+    await loadUserRole();
     showChat();
     await prepareMedia();
     status("Регистрация завершена. Готов к поиску.");
@@ -250,6 +282,14 @@ async function block(){
  await stop(); status("Пользователь заблокирован.");
 }
 $("authBtn").onclick=auth;
+$("profileBtn").onclick=()=>$("profileMenu").classList.toggle("open");
+document.addEventListener("click",e=>{if(!e.target.closest("#profileWrap"))$("profileMenu")?.classList.remove("open")});
+$("adminLink").onclick=()=>{location.href="./admin.html"};
+$("profileInfo").onclick=()=>{
+  const card=$("profileCard");
+  card.classList.toggle("hidden");
+  card.innerHTML="<b>Аккаунт</b><br>"+(user?.email||"—")+"<br><b>Роль:</b> "+(userRole==="admin"?"Администратор":userRole==="moderator"?"Модератор":"Пользователь")+"<br><b>Статус 18+:</b> подтверждён";
+};
 $("modeLink").onclick=()=>{
  const login=$("authBtn").dataset.mode==="login";
  $("authBtn").dataset.mode=login?"signup":"login";
@@ -260,10 +300,11 @@ $("modeLink").onclick=()=>{
 $("nextBtn").onclick=find;$("stopBtn").onclick=stop;$("reportBtn").onclick=report;$("blockBtn").onclick=block;
 $("micBtn").onclick=()=>{const t=localStream?.getAudioTracks()[0];if(t){t.enabled=!t.enabled;$("micBtn").textContent=t.enabled?"🎙 Микрофон":"🔇 Микрофон выключен"}};
 $("camBtn").onclick=()=>{const t=localStream?.getVideoTracks()[0];if(t){t.enabled=!t.enabled;$("camBtn").textContent=t.enabled?"📷 Камера":"🚫 Камера выключена"}};
-$("logoutBtn").onclick=async()=>{await stop();localStream?.getTracks().forEach(t=>t.stop());localStream=null;await sb.auth.signOut();user=null;showAuth()};
+$("logoutBtn").onclick=async()=>{await stop();localStream?.getTracks().forEach(t=>t.stop());localStream=null;await sb.auth.signOut();user=null;userRole="user";$("profileWrap").classList.add("hidden");$("profileMenu").classList.remove("open");showAuth()};
 sb.auth.onAuthStateChange(async (_e,s)=>{
  if(s?.user){
   user=s.user;
+  await loadUserRole();
   try{
    const p=await ensureProfile(user);
    if(localStorage.getItem("vibechat18_pending_consent")==="1"){
