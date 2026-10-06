@@ -230,12 +230,12 @@ async function find(){
  searchTimer=setInterval(checkQueue,1200);
 }
 async function checkQueue(){
- const {data,error}=await sb.from("match_queue").select("session_id").eq("user_id",user.id).maybeSingle();
- if(error)return;
- if(data&&data.session_id){
+ const r=await sb.functions.invoke("matchmake",{body:{action:"status"}});
+ if(r.error)return;
+ const m=r.data;
+ if(m?.matched&&m.session_id&&m.peer_id){
   clearInterval(searchTimer);searchTimer=null;
-  const {data:s}=await sb.from("chat_sessions").select("user_a,user_b").eq("id",data.session_id).maybeSingle();
-  if(s){const p=s.user_a===user.id?s.user_b:s.user_a;await startSession(data.session_id,p)}
+  await startSession(m.session_id,m.peer_id);
  }
 }
 async function startSession(sid,pid){
