@@ -285,7 +285,6 @@ sb.auth.onAuthStateChange(async (_e,s)=>{
 });
 (async()=>{const r=await sb.auth.getSession();if(r.data.session){user=r.data.session.user;try{const p=await ensureProfile(user);if(p?.age_confirmed&&p?.terms_accepted_at&&p?.privacy_accepted_at){showChat();await prepareMedia()}}catch{}}})();
 </script>
-</script>
 <script>
 document.getElementById("heroStart").onclick=()=>{
   if(!document.getElementById("startAge").checked){alert("Подтвердите, что вам 18 лет.");return}
