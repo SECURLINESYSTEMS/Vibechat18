@@ -1,0 +1,4 @@
+User-agent: *
+Allow: /
+
+Sitemap: https://securlinesystems.github.io/Vibechat18/sitemap.xml
