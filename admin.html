@@ -1,0 +1,47 @@
+<!doctype html>
+<html lang="ru">
+<head>
+<meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1">
+<title>VibeChat18 — Админ-панель</title>
+<meta name="robots" content="noindex,nofollow">
+<style>
+:root{--bg:#070914;--panel:#10172a;--line:#25304a;--text:#f4f7ff;--muted:#9ba8bd;--accent:#6f7dff;--danger:#ff5d78;--ok:#48dda0}
+*{box-sizing:border-box}body{margin:0;background:radial-gradient(900px 500px at 50% -150px,#20295c,transparent 65%),var(--bg);color:var(--text);font-family:Inter,system-ui,sans-serif}.wrap{max-width:1180px;margin:auto;padding:22px}.top{display:flex;justify-content:space-between;align-items:center;margin-bottom:18px}.logo{font-size:22px;font-weight:900}.logo b{color:#42d8ff}.card{background:#0e1525;border:1px solid var(--line);border-radius:18px;padding:18px}.stats{display:grid;grid-template-columns:repeat(3,1fr);gap:12px;margin-bottom:16px}.stat strong{display:block;font-size:30px;margin-top:6px}.muted{color:var(--muted)}button{border:1px solid #34415f;background:#141e33;color:#fff;border-radius:10px;padding:9px 12px;cursor:pointer}button:hover{border-color:#6678ff}.danger{border-color:#713348;color:#ff9fb0}.ok{border-color:#27684f;color:#80edbd}.reports{display:grid;gap:12px}.report{padding:16px;border:1px solid #26324a;border-radius:14px;background:#0a101d}.row{display:flex;gap:8px;flex-wrap:wrap;align-items:center}.reason{font-weight:800}.badge{padding:5px 8px;border-radius:999px;background:#18223a;color:#cbd5eb;font-size:12px}.details{margin:9px 0;color:#b7c2d5;white-space:pre-wrap}.actions{display:flex;gap:7px;flex-wrap:wrap;margin-top:12px}.error{color:#ff9dad;padding:12px}.empty{padding:30px;text-align:center;color:var(--muted)}@media(max-width:700px){.stats{grid-template-columns:1fr}.wrap{padding:12px}}
+</style></head>
+<body><div class="wrap">
+<div class="top"><div class="logo">VibeChat<span class="logo b">18</span> <span class="muted">/ Admin</span></div><div class="row"><button id="refresh">Обновить</button><button id="home">На сайт</button></div></div>
+<div id="error"></div>
+<div class="stats"><div class="card stat"><span class="muted">Пользователи</span><strong id="users">—</strong></div><div class="card stat"><span class="muted">Открытые жалобы</span><strong id="open">—</strong></div><div class="card stat"><span class="muted">Заблокированные</span><strong id="banned">—</strong></div></div>
+<div class="card"><h2>Модерация</h2><div id="reports" class="reports"><div class="empty">Загрузка…</div></div></div>
+</div>
+<script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+<script>
+const URL="https://vnncjunlpstyietqcufk.supabase.co",KEY="sb_publishable_shL_QzGZPCCjK5sE89S9vA_uiIJD5rt";
+const sb=supabase.createClient(URL,KEY); const $=id=>document.getElementById(id);
+async function call(body){const r=await sb.functions.invoke("admin",{body});if(r.error)throw new Error(r.error.message||"Ошибка");if(r.data?.error)throw new Error(r.data.error);return r.data}
+function esc(s){return String(s??"").replace(/[&<>"']/g,c=>({"&":"&amp;","<":"&lt;",">":"&gt;","\"":"&quot;","'":"&#39;"}[c]))}
+async function load(){
+ $("error").innerHTML="";
+ try{
+  const [st,re]=await Promise.all([call({action:"stats"}),call({action:"reports"})]);
+  $("users").textContent=st.stats.users;$("open").textContent=st.stats.open_reports;$("banned").textContent=st.stats.banned_users;
+  const rows=re.reports||[];$("reports").innerHTML=rows.length?rows.map(r=>`
+  <article class="report">
+   <div class="row"><span class="reason">${esc(r.reason)}</span><span class="badge">${esc(r.status)}</span><span class="badge">${new Date(r.created_at).toLocaleString("ru-RU")}</span></div>
+   <div class="details">${esc(r.details||"Без комментария")}</div>
+   <div class="muted">Жалоба: ${esc(r.reporter?.display_name||r.reporter_id)} → Пользователь: ${esc(r.reported?.display_name||r.reported_id||"не указан")}</div>
+   <div class="actions">
+    <button class="ok" onclick="setStatus('${r.id}','reviewing')">В работу</button>
+    <button class="ok" onclick="setStatus('${r.id}','resolved')">Решено</button>
+    <button onclick="setStatus('${r.id}','dismissed')">Отклонить</button>
+    ${r.reported_id&&!r.reported?.is_banned?'<button class="danger" onclick="ban(\''+r.reported_id+'\')">Заблокировать пользователя</button>':r.reported_id?'<button class="ok" onclick="unban(\''+r.reported_id+'\')">Разблокировать</button>':""}
+   </div>
+  </article>`).join(""):'<div class="empty">Жалоб пока нет.</div>';
+ }catch(e){$("error").innerHTML='<div class="error">'+esc(e.message)+'</div>'}
+}
+async function setStatus(id,status){try{await call({action:"set_report_status",report_id:id,status});await load()}catch(e){$("error").innerHTML='<div class="error">'+esc(e.message)+'</div>'}}
+async function ban(id){if(!confirm("Заблокировать пользователя?"))return;try{await call({action:"ban",user_id:id});await load()}catch(e){$("error").innerHTML='<div class="error">'+esc(e.message)+'</div>'}}
+async function unban(id){if(!confirm("Снять блокировку?"))return;try{await call({action:"unban",user_id:id});await load()}catch(e){$("error").innerHTML='<div class="error">'+esc(e.message)+'</div>'}}
+$("refresh").onclick=load;$("home").onclick=()=>location.href="./";
+(async()=>{const s=await sb.auth.getSession();if(!s.data.session){location.href="./";return}await load()})();
+</script></body></html>
