@@ -124,30 +124,64 @@ async function ensureProfile(u){
  return data;
 }
 async function saveConsent(){
- await sb.from("profiles").update({age_confirmed:true,age_confirmed_at:new Date().toISOString(),terms_accepted_at:new Date().toISOString(),privacy_accepted_at:new Date().toISOString()}).eq("id",user.id);
- await sb.from("consents").upsert([
+ if(!user) throw new Error("Пользователь не авторизован.");
+ const now=new Date().toISOString();
+ const p=await sb.from("profiles").update({
+  age_confirmed:true,
+  age_confirmed_at:now,
+  terms_accepted_at:now,
+  privacy_accepted_at:now
+ }).eq("id",user.id);
+ if(p.error) throw p.error;
+ const c=await sb.from("consents").upsert([
   {user_id:user.id,consent_type:"age_18",version:"1.0"},
   {user_id:user.id,consent_type:"terms",version:"1.0"},
   {user_id:user.id,consent_type:"privacy",version:"1.0"},
   {user_id:user.id,consent_type:"community_rules",version:"1.0"}
  ],{onConflict:"user_id,consent_type,version"});
+ if(c.error) throw c.error;
+ localStorage.removeItem("vibechat18_pending_consent");
 }
 async function auth(){
  msg("");
  if(!$("age").checked||!$("terms").checked){msg("Подтвердите 18+ и принятие правил.");return}
  const email=$("email").value.trim(), password=$("password").value;
- if(!email||password.length<6){msg("Введите email и пароль от 6 символов.");return}
+ if(!email||password.length<6){msg("Введите корректный email и пароль от 6 символов.");return}
  $("authBtn").disabled=true;
  try{
+  const isLogin=$("authBtn").dataset.mode==="login";
   let r;
-  if($("authBtn").dataset.mode==="login") r=await sb.auth.signInWithPassword({email,password});
-  else r=await sb.auth.signUp({email,password});
-  if(r.error) throw r.error;
-  user=r.data.user;
-  if(!user) throw new Error("Не удалось создать пользователя.");
-  await saveConsent();
-  showChat(); await prepareMedia(); status("Готов к поиску.");
- }catch(e){msg(e.message||"Ошибка авторизации")}
+  if(isLogin){
+   r=await sb.auth.signInWithPassword({email,password});
+   if(r.error) throw r.error;
+   user=r.data.user;
+   if(!user) throw new Error("Не удалось выполнить вход.");
+   await saveConsent();
+   showChat();
+   await prepareMedia();
+   status("Готов к поиску.");
+  }else{
+   r=await sb.auth.signUp({
+    email,
+    password
+   });
+   if(r.error) throw r.error;
+   if(!r.data.user) throw new Error("Supabase не вернул созданного пользователя.");
+   localStorage.setItem("vibechat18_pending_consent","1");
+   if(r.data.session){
+    user=r.data.user;
+    await saveConsent();
+    showChat();
+    await prepareMedia();
+    status("Регистрация завершена. Готов к поиску.");
+   }else{
+    msg("Аккаунт создан. Проверьте почту и подтвердите email. После подтверждения вернитесь на сайт — вход выполнится автоматически.");
+   }
+  }
+ }catch(e){
+  console.error(e);
+  msg(e.message||e.error_description||"Ошибка регистрации. Попробуйте ещё раз.");
+ }
  $("authBtn").disabled=false;
 }
 async function prepareMedia(){
@@ -245,7 +279,21 @@ $("logoutBtn").onclick=async()=>{await stop();localStream?.getTracks().forEach(t
 sb.auth.onAuthStateChange(async (_e,s)=>{
  if(s?.user){
   user=s.user;
-  try{const p=await ensureProfile(user);if(p?.age_confirmed&&p?.terms_accepted_at&&p?.privacy_accepted_at){showChat();await prepareMedia()}}catch{}
+  try{
+   const p=await ensureProfile(user);
+   if(localStorage.getItem("vibechat18_pending_consent")==="1"){
+    await saveConsent();
+   }
+   const p2=await ensureProfile(user);
+   if(p2?.age_confirmed&&p2?.terms_accepted_at&&p2?.privacy_accepted_at){
+    showChat();
+    await prepareMedia();
+    status("Вход выполнен. Готов к поиску.");
+   }
+  }catch(e){
+   console.error(e);
+   msg(e.message||"Не удалось завершить авторизацию.");
+  }
  }
 });
 (async()=>{const r=await sb.auth.getSession();if(r.data.session){user=r.data.session.user;try{const p=await ensureProfile(user);if(p?.age_confirmed&&p?.terms_accepted_at&&p?.privacy_accepted_at){showChat();await prepareMedia()}}catch{}}})();
